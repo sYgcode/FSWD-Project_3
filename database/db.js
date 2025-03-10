@@ -1,4 +1,4 @@
-class DB {
+export class DB {
     // id of our database
     DBid = 0;
     idCounter = 0; // for each item in our db it will have a unique id 
@@ -36,15 +36,16 @@ class DB {
 
     // get a specific item by key belonging to a database
     getByKey(key){
-        obj = JSON.parse(localStorage.getItem(key));
+        const obj = localStorage.getItem(this.DBid+key);
         if (obj)
-            return obj;
+            return JSON.parse(obj);
         return false;
     }
 
     // helper function on if something exists in our database
     doesExistInDB(key) {
         for (let entry of this.DBData){
+            console.log(entry);
             if (entry == key)
                 return true;
         }
@@ -54,8 +55,14 @@ class DB {
 
     // add an item to our db. include a field identifying the DB and a special id for the item
     add(key, obj){
-        if (this.doesExistInDB(key) || key == this.DBid)
+        for(let entry of DB.savedWords){
+            if(entry == key)
+                return false;
+        }
+        if (this.doesExistInDB(key) || key == this.DBid){
+            console.log("exists");
             return false;
+        }
         obj.DBid = this.DBid;
         obj.DBitemID = ++this.idCounter;
         localStorage.setItem(this.DBid+"idCounter", this.idCounter);
