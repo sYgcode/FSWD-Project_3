@@ -4,7 +4,8 @@ const meeting = {
     date : "...",
     startTime: "..",
     endTime: "...",
-    owner: "username..."
+    owner: "username...",
+    password: 32903 // MAKE SURE IT IS HASHED
 }
 export class DataServer {
     constructor(){
