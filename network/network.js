@@ -4,7 +4,7 @@ import { DataServer } from "../server/api/dataServer.js";
 export class Network {
     static methods = ["GET", "POST", "PUT", "DELETE"];
     // constructor for our network. inits drop probability and delay times to simulate a real network
-    constructor(dropProbability = 0.2, maxDelay=3000, minDelay=1000) {
+    constructor(dropProbability = 0.2, maxDelay=1000, minDelay=5) {
         this.dropProbability = dropProbability;
         this.maxDelay = maxDelay;
         this.minDelay = minDelay;
