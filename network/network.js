@@ -14,7 +14,7 @@ export class Network {
         this.dataServer = new DataServer();
 
         // list of servers
-        this.servers = {"/users": this.userServer, "/data": this.dataServer};
+        this.servers = {"/users": this.userServer, "/meetings": this.dataServer};
     }
 
     sendRequest(method, url, body, callback) {

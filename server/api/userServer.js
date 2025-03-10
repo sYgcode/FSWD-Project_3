@@ -31,8 +31,8 @@ export class UserServer {
 
     genResponse(status, message, data = null){
         if(data)
-            return {status: status, message: message, data: data};
-        return {status: status, message: message};
+            return JSON.stringify({status: status, message: message, data: data});
+        return JSON.stringify({status: status, message: message});
     }
 
     get() {
@@ -64,7 +64,10 @@ export class UserServer {
 
     put(body) {
         if (body.hasOwnProperty("username") && body.hasOwnProperty("password") && body.hasOwnProperty("email")){
-            body[data] = [];
+            let resp = this.getByKey(body.username);
+            if(resp.status != 200)
+                return this.genResponse(404, "Not Found: User does not exist in DB");
+            body[data] = resp.data.data;
             let success = this.userDB.update(body.username, body);
             if (!success)
                 return this.genResponse(404, "Not Found: User does not exist in DB");
