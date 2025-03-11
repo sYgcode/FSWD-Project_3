@@ -3,7 +3,7 @@ export class DB {
     DBid = 0;
     idCounter = 0; // for each item in our db it will have a unique id 
     DBData = []; // store the key of each item belonging to our db
-    static savedWords = ["", "idCounter"]; // keep track of savedwords for security reasons
+    static savedWords = ["", "idCounter", "session"]; // keep track of savedwords for security reasons
 
     // constructor sets up our params and loads in our DBData
     constructor(DBid) {

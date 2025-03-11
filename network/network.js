@@ -58,7 +58,7 @@ export class Network {
 // function cllbck(obj) {
 //     console.log(obj);
 // }
-// net.sendRequest("POST","/users",JSON.stringify({username: "shua", password: 123, email:"example@example.com"}), cllbck);
-// net.sendRequest("GET","/users",JSON.stringify({username: "shua", password:123}), cllbck);
+// net.sendRequest("POST","/logout",JSON.stringify({username: "shua", password: 123, email:"example@example.com", sessionID: "2025-03-11T17:46:31.739Z"}), cllbck);
+// // net.sendRequest("GET","/users",JSON.stringify({username: "shua", password:123}), cllbck);
 // net.sendRequest("POST","/meetings",JSON.stringify({title: "meeting1", date: "12/12/2021", startTime: "12:00", endTime: "1:00", username: "shua", password:123}), cllbck);
 // net.sendRequest("DELETE","/meetings",JSON.stringify({title: "meeting1", username: "shua", password:123}), cllbck);
