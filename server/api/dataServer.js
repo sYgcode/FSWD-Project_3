@@ -32,15 +32,16 @@ export class DataServer {
         }
     }
 
-    authenticated(body, ){
-        let userResp =JSON.parse(this.net.sendRequest("GET", this.userServer,{username: body.username}));
+    authenticated(body){
+        let userResp =this.net.sendRequest("GET", this.userServer,{username: body.username}, (response) =>{return response;});
+        userResp = JSON.parse(userResp);
         if(userResp.hasOwnProperty("status") && userResp.status == 200 && userResp.hasOwnProperty("data")){
             if(body.hasOwnProperty("username") && body.hasOwnProperty("password")){
                 if(body.username == userResp.data.username && body.password == userResp.data.password)
-                    return {flag: true, data: userResp.data.data};
+                    return {flag: true, data: userResp.data};
             }
         }
-        return false;
+        return {flag:false};
     }
 
     genResponse(status, message, data = null){
@@ -53,10 +54,10 @@ export class DataServer {
         if(body.hasOwnProperty("username") && body.hasOwnProperty("password")){
             let returnData = [];
             let authData = this.authenticated(body);
-            if(!authData){
+            if(!authData.flag){
                 return this.genResponse(403, "Forbidden: Authentication is invalid");
             }
-            for(let meeting of authData.data){
+            for(let meeting of authData.data.data){
                 let temp = this.database.getByKey(body.username+meeting);
                 if (temp && temp.hasOwnProperty("owner") && temp.owner==body.username){
                     returnData.push(temp);
@@ -72,7 +73,8 @@ export class DataServer {
 
     getByKey(body) {
         if(body.hasOwnProperty("username") && body.hasOwnProperty("password") && body.hasOwnProperty("title")){
-            if(!this.authenticated(body)){
+            let authData = this.authenticated(body);
+            if(!authData.flag){
                 return this.genResponse(403, "Forbidden: Authentication is invalid");
             }
             if(userResp.data.includes(body.title)){
@@ -89,21 +91,20 @@ export class DataServer {
         const properties = ["username", "password", "title", "date", "startTime", "endTime"];
         let allExist = properties.every(property => body.hasOwnProperty(property));
         if(allExist){
-            if(!this.authenticated(body)){
+            let authData = this.authenticated(body);
+            if(!authData.flag){
                 return this.genResponse(403, "Forbidden: Authentication is invalid");
             }
-            let userResp =JSON.parse(this.net.sendRequest("GET", this.userServer,{username: body.username}));
-            if(userResp.hasOwnProperty("status") && userResp.status == 200 && userResp.hasOwnProperty("data")){
-                userResp.data.data.push(title);
-                let userResp1 = JSON.parse(this.net.sendRequest("PUT", this.userServer, userResp.data));
-                if(userResp1.hasOwnProperty("status") && (userResp1.status == 200 || userResp1.status == 500)){
-                    let meeting = {title:body.title, date:body.date, startTime:body.startTime, endTime:body.endTime, owner:body.username}
-                    let success = this.database.add(body.username+body.title, meeting);
-                    if(success)
-                        return this.genResponse(200, "Ok", meeting);
-                    else
-                        return this.genResponse(409, "Conflict: Meeting already exists");
-                }
+            authData.data.data.push(title);
+            let userResp1 = this.net.sendRequest("PUT", this.userServer, authData.data, (response) =>{return response;});
+            userResp1 = JSON.parse(userResp1);
+            if(userResp1.hasOwnProperty("status") && (userResp1.status == 200 || userResp1.status == 500)){
+                let meeting = {title:body.title, date:body.date, startTime:body.startTime, endTime:body.endTime, owner:body.username}
+                let success = this.database.add(body.username+body.title, meeting);
+                if(success)
+                    return this.genResponse(200, "Ok", meeting);
+                else
+                    return this.genResponse(409, "Conflict: Meeting already exists");
             }
             return(403, "Forbidden: Auth failed")
         }
@@ -114,7 +115,8 @@ export class DataServer {
         const properties = ["username", "password", "title", "date", "startTime", "endTime"];
         let allExist = properties.every(property => body.hasOwnProperty(property));
         if(allExist){
-            if(!this.authenticated(body)){
+            let authData = this.authenticated(body);
+            if(!authData.flag){
                 return this.genResponse(403, "Forbidden: Authentication is invalid");
             }
 
@@ -129,25 +131,24 @@ export class DataServer {
     }
     delete(body) {
         if(body.hasOwnProperty("title")){
-            if(!this.authenticated(body)){
+            let authData = this.authenticated(body);
+            if(!authData.flag){
                 return this.genResponse(403, "Forbidden: Authentication is invalid");
             }
-            let userResp =JSON.parse(this.net.sendRequest("GET", this.userServer,{username: body.username}));
-            if(userResp.hasOwnProperty("status") && userResp.status == 200 && userResp.hasOwnProperty("data")){
-                for (let i in userResp.data.data){
-                    if(userResp.data.data[i] == body.title){
-                        userResp.data.data.splice(i, 1);
-                        break;
-                    }
+            for (let i in authData.data.data){
+                if(authData.data.data[i] == body.title){
+                    authData.data.data.splice(i, 1);
+                    break;
                 }
-                let userResp1 = JSON.parse(this.net.sendRequest("PUT", this.userServer, userResp.data));
-                if(userResp1.hasOwnProperty("status") && (userResp1.status == 200 || userResp1.status == 500)){
-                    let success = this.database.delete(body.username+body.title);
-                    if(success)
-                        return this.genResponse(200, "Ok");
-                    else
-                        return this.genResponse(404, "Not Found: Meeting does not exist in DB");
-                }
+            }
+            let userResp1 = this.net.sendRequest("PUT", this.userServer, authData.data, (response) =>{return response;});
+            userResp1 = JSON.parse(userResp1);
+            if(userResp1.hasOwnProperty("status") && (userResp1.status == 200 || userResp1.status == 500)){
+                let success = this.database.delete(body.username+body.title);
+                if(success)
+                    return this.genResponse(200, "Ok");
+                else
+                    return this.genResponse(404, "Not Found: Meeting does not exist in DB");
             }
             return(403, "Forbidden: Auth failed")
         }
