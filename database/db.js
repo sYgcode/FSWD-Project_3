@@ -93,7 +93,7 @@ export class DB {
 
     // update a key to be equal to a new obj
     update(key, obj) {
-        for(let entry of this.savedWords){
+        for(let entry of DB.savedWords){
             if(entry == key)
                 return false;
         }

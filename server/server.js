@@ -108,10 +108,10 @@ export class Server {
 
     // put request to the user db
     userPut(body){
-        console.log("sup2" + body);
         // confirm the body of the request has the username, password, and email
         if (body.hasOwnProperty("username") && body.hasOwnProperty("password") && body.hasOwnProperty("email")){
-            let resp = JSON.parse(this.getUserByKey(body.username));
+            let resp = JSON.parse(this.getUserByKey(body));
+            console.log("sup2" + resp.status);
             if(resp.status != 200)
                 return this.genResponse(404, "Not Found: User does not exist in DB");
             let newData;
@@ -218,8 +218,8 @@ export class Server {
         if (!success)
             return this.genResponse(409, "Conflict: Meeting already exists");
         authData.data.data.push(body.title);
-        console.log(authData.data.data);
-        let userResp1 = this.userPut(authData);
+        console.log(authData.data);
+        let userResp1 = this.userPut(authData.data);
         userResp1 = JSON.parse(userResp1);
         if(userResp1.hasOwnProperty("status") && (userResp1.status == 200 || userResp1.status == 500)){
             return this.genResponse(200, "Ok", newMeeting);
@@ -261,7 +261,7 @@ export class Server {
             if (!success)
                 return this.genResponse(404, "Not Found: Meeting does not exist");
             authData.data.data = authData.data.data.filter(title => title != body.title);
-            let userResp1 = this.userPut(JauthData.data);
+            let userResp1 = this.userPut(authData.data);
             userResp1 = JSON.parse(userResp1);
             if(userResp1.hasOwnProperty("status") && (userResp1.status == 200 || userResp1.status == 500)){
                 return this.genResponse(200, "Ok");

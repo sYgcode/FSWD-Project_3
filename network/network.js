@@ -1,5 +1,5 @@
-import { UserServer } from "../server/api/userServer.js";
-import { DataServer } from "../server/api/dataServer.js";
+// import { UserServer } from "../server/api/userServer.js";
+// import { DataServer } from "../server/api/dataServer.js";
 import { Server } from "../server/server.js";
 
 export class Network {
@@ -54,10 +54,11 @@ export class Network {
     }
 }
 
-const net = new Network();
-function cllbck(obj) {
-    console.log(obj);
-}
-net.sendRequest("POST","/users",JSON.stringify({username: "shua", password: 123, email:"example@example.com"}), cllbck);
-net.sendRequest("GET","/users",JSON.stringify({username: "shua", password:123}), cllbck);
-net.sendRequest("POST","/meetings",JSON.stringify({title: "meeting1", date: "12/12/2021", startTime: "12:00", endTime: "1:00", username: "shua", password:123}), cllbck);
+// const net = new Network();
+// function cllbck(obj) {
+//     console.log(obj);
+// }
+// net.sendRequest("POST","/users",JSON.stringify({username: "shua", password: 123, email:"example@example.com"}), cllbck);
+// net.sendRequest("GET","/users",JSON.stringify({username: "shua", password:123}), cllbck);
+// net.sendRequest("POST","/meetings",JSON.stringify({title: "meeting1", date: "12/12/2021", startTime: "12:00", endTime: "1:00", username: "shua", password:123}), cllbck);
+// net.sendRequest("DELETE","/meetings",JSON.stringify({title: "meeting1", username: "shua", password:123}), cllbck);
