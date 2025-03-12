@@ -1,5 +1,5 @@
 // Fixed meeting-service.js with correct import path
-import { api } from '../fajax/fajax.js';
+import { api } from '../fajax.js';
 
 export class MeetingService {
     constructor() {

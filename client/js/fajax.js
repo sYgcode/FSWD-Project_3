@@ -1,5 +1,5 @@
 // fajax.js - Corrected implementation for client-server communication
-import { Network } from '../network/network.js';
+import { Network } from '/network/network.js';
 
 export class FXMLHttpRequest {
     constructor() {
