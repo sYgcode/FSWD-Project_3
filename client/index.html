@@ -3,11 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type="module" src="/network/network.js" defer></script>
-    <script type="module" src="/server/api/userServer.js" defer></script>
-    <title>Document</title>
+    <title>Meeting Calendar</title>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    
+<div class="container">
+    <header>
+        <h1>Meeting Calendar</h1>
+        <div id="user-info"></div>
+        <button id="logout-btn" class="auth-required">Logout</button>
+    </header>
+
+    <main>
+        <!-- Authentication Section -->
+        <section class="auth-section no-auth-required">
+            <div class="auth-tabs">
+                <button class="tab-btn active" data-tab="login">Login</button>
+                <button class="tab-btn" data-tab="register">Register</button>
+            </div>
+
+            <div class="tab-content" id="login-tab">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-username">Username:</label>
+                        <input type="text" id="login-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password:</label>
+                        <input type="password" id="login-password" required>
+                    </div>
+                    <button type="submit">Login</button>
+                </form>
+            </div>
+
+            <div class="tab-content hidden" id="register-tab">
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="register-username">Username:</label>
+                        <input type="text" id="register-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Password:</label>
+                        <input type="password" id="register-password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">Email:</label>
+                        <input type="email" id="register-email" required>
+                    </div>
+                    <button type="submit">Register</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Calendar Section -->
+        <section class="calendar-section auth-required">
+            <div class="add-meeting">
+                <h2>Manage Meetings</h2>
+                <form id="meeting-form" data-mode="add">
+                    <div class="form-group">
+                        <label for="meeting-title">Meeting Title:</label>
+                        <input type="text" id="meeting-title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="meeting-date">Date:</label>
+                        <input type="date" id="meeting-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="meeting-start">Start Time:</label>
+                        <input type="time" id="meeting-start" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="meeting-end">End Time:</label>
+                        <input type="time" id="meeting-end" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" id="meeting-submit">Add Meeting</button>
+                        <button type="button" id="cancel-meeting-btn" style="display: none;">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="meetings-list-container">
+                <h2>Your Meetings</h2>
+                <div id="meetings-list">
+                    <!-- Meetings will be displayed here -->
+                    <p>No meetings scheduled.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Meeting Calendar App</p>
+    </footer>
+</div>
+
+<!-- Include necessary JS files -->
+<script src="./database/db.js"></script>
+<script src="./network/network.js"></script>
+<script src="./server/server.js"></script>
+<script src="./client/client.js"></script>
+<script>
+    // Tab switching logic
+    document.querySelectorAll('.tab-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Add active class to clicked tab
+            button.classList.add('active');
+
+            // Hide all tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            // Show selected tab content
+            const tabId = button.dataset.tab + '-tab';
+            document.getElementById(tabId).classList.remove('hidden');
+        });
+    });
+</script>
 </body>
 </html>

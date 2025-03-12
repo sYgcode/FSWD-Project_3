@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meeting Calendar</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f7f9fc;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid #e1e4e8;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      color: #2c3e50;
+    }
+
+    .auth-section {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    #user-info {
+      margin-right: 10px;
+      font-weight: 500;
+    }
+
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    .delete-btn {
+      background-color: #e74c3c;
+    }
+
+    .delete-btn:hover {
+      background-color: #c0392b;
+    }
+
+    .edit-btn {
+      background-color: #f39c12;
+    }
+
+    .edit-btn:hover {
+      background-color: #d35400;
+    }
+
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 30px;
+    }
+
+    .meeting-form-container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .meetings-container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #2c3e50;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 10px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    label {
+      font-weight: 500;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .meetings-date-group {
+      list-style-type: none;
+      margin-bottom: 20px;
+    }
+
+    .meeting-item {
+      padding: 15px;
+      border-left: 4px solid #3498db;
+      background-color: #f8f9fa;
+      margin-bottom: 10px;
+      border-radius: 0 4px 4px 0;
+    }
+
+    .meeting-item h4 {
+      margin-bottom: 5px;
+      color: #2c3e50;
+    }
+
+    .meeting-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .auth-required {
+      display: none;
+    }
+
+    .no-auth-required {
+      display: block;
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 4px;
+      color: white;
+      z-index: 1000;
+      transition: opacity 0.3s;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .notification.info {
+      background-color: #3498db;
+    }
+
+    .notification.success {
+      background-color: #2ecc71;
+    }
+
+    .notification.error {
+      background-color: #e74c3c;
+    }
+
+    .notification.fade-out {
+      opacity: 0;
+    }
+
+    .login-register-container {
+      display: flex;
+      flex-direction: column;
+      max-width: 400px;
+      margin: 0 auto;
+      gap: 20px;
+    }
+
+    .auth-form {
+      background-color: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <!-- Header Section -->
+  <header>
+    <h1>Meeting Calendar</h1>
+    <div class="auth-section">
+      <span id="user-info" class="auth-required"></span>
+      <button id="logout-btn" class="auth-required">Logout</button>
+    </div>
+  </header>
+
+  <!-- Main Content (Visible when logged in) -->
+  <div class="main-content auth-required">
+    <!-- Meeting Form Section -->
+    <div class="meeting-form-container">
+      <h2>Add New Meeting</h2>
+      <form id="meeting-form" data-mode="add">
+        <div>
+          <label for="meeting-title">Meeting Title</label>
+          <input type="text" id="meeting-title" required>
+        </div>
+
+        <div>
+          <label for="meeting-date">Date</label>
+          <input type="date" id="meeting-date" required>
+        </div>
+
+        <div>
+          <label for="meeting-start">Start Time</label>
+          <input type="time" id="meeting-start" required>
+        </div>
+
+        <div>
+          <label for="meeting-end">End Time</label>
+          <input type="time" id="meeting-end" required>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" id="meeting-submit">Add Meeting</button>
+          <button type="button" id="cancel-meeting-btn" style="display: none;">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Meetings List Section -->
+    <div class="meetings-container">
+      <h2>Your Meetings</h2>
+      <div id="meetings-list">
+        <!-- Meetings will be dynamically populated here -->
+        <p>Loading meetings...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login/Register Section (Visible when logged out) -->
+  <div class="login-register-container no-auth-required">
+    <!-- Login Form -->
+    <div class="auth-form">
+      <h2>Login</h2>
+      <form id="login-form">
+        <div>
+          <label for="login-username">Username</label>
+          <input type="text" id="login-username" required>
+        </div>
+
+        <div>
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" required>
+        </div>
+
+        <button type="submit">Login</button>
+      </form>
+    </div>
+
+    <!-- Register Form -->
+    <div class="auth-form">
+      <h2>Register</h2>
+      <form id="register-form">
+        <div>
+          <label for="register-username">Username</label>
+          <input type="text" id="register-username" required>
+        </div>
+
+        <div>
+          <label for="register-email">Email</label>
+          <input type="email" id="register-email" required>
+        </div>
+
+        <div>
+          <label for="register-password">Password</label>
+          <input type="password" id="register-password" required>
+        </div>
+
+        <button type="submit">Register</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Script tags -->
+<script type="text/javascript">
+  // Server-side code for the calendar application
+  class Server {
+    constructor() {
+      this.users = {};
+      this.sessions = {};
+      this.meetings = {};
+    }
+
+    handleRequest(method, url, body, callback) {
+      const requestData = body ? JSON.parse(body) : {};
+
+      if (url === "/login") {
+        this.handleLogin(requestData, callback);
+      } else if (url === "/register") {
+        this.handleRegister(requestData, callback);
+      } else if (url === "/logout") {
+        this.handleLogout(requestData, callback);
+      } else if (url === "/meetings") {
+        if (method === "GET") {
+          this.handleGetMeetings(requestData, callback);
+        } else if (method === "POST") {
+          this.handleAddMeeting(requestData, callback);
+        } else if (method === "PUT") {
+          this.handleUpdateMeeting(requestData, callback);
+        } else if (method === "DELETE") {
+          this.handleRemoveMeeting(requestData, callback);
+        }
+      } else {
+        callback(JSON.stringify({
+          status: 404,
+          message: "Endpoint not found"
+        }));
+      }
+    }
+
+    handleLogin(data, callback) {
+      const { username, password } = data;
+
+      if (!username || !password) {
+        callback(JSON.stringify({
+          status: 400,
+          message: "Username and password required"
+        }));
+        return;
+      }
+
+      if (!this.users[username]) {
+        callback(JSON.stringify({
+          status: 401,
+          message: "Invalid username or password"
+        }));
+        return;
+      }
+
+      if (this.users[username].password !== password) {
+        callback(JSON.stringify({
+          status: 401,
+          message: "Invalid username or password"
+        }));
+        return;
+      }
+
+      // Generate session ID
+      const sessionID = this.generateSessionID();
+      this.sessions[sessionID] = {
+        username: username,
+        createdAt: new Date().toISOString()
+      };
+
+      callback(JSON.stringify({
+        status: 200,
+        message: "Login successful",
+        data: {
+          sessionID: sessionID
+        }
+      }));
+    }
+
+    handleRegister(data, callback) {
+      const { username, password, email } = data;
+
+      if (!username || !password || !email) {
+        callback(JSON.stringify({
+          status: 400,
+          message: "Username, password, and email required"
+        }));
+        return;
+      }
+
+      if (this.users[username]) {
+        callback(JSON.stringify({
+          status: 409,
+          message: "Username already exists"
+        }));
+        return;
+      }
+
+      // Register user
+      this.users[username] = {
+        username: username,
+        password: password,
+        email: email,
+        createdAt: new Date().toISOString()
+      };
+
+      // Initialize user's meetings
+      this.meetings[username] = [];
+
+      // Generate session ID
+      const sessionID = this.generateSessionID();
+      this.sessions[sessionID] = {
+        username: username,
+        createdAt: new Date().toISOString()
+      };
+
+      callback(JSON.stringify({
+        status: 200,
+        message: "Registration successful",
+        data: {
+          sessionID: sessionID
+        }
+      }));
+    }
+
+    handleLogout(data, callback) {
+      const { sessionID } = data;
+
+      if (sessionID && this.sessions[sessionID]) {
+        delete this.sessions[sessionID];
+      }
+
+      callback(JSON.stringify({
+        status: 200,
+        message: "Logout successful"
+      }));
+    }
+
+    handleGetMeetings(data, callback) {
+      const { username, sessionID } = data;
+
+      if (!this.validateSession(username, sessionID)) {
+        callback(JSON.stringify({
+          status: 401,
+          message: "Invalid or expired session"
+        }));
+        return;
+      }
+
+      callback(JSON.stringify({
+        status: 200,
+        message: "Meetings retrieved",
+        data: {
+          meetings: this.meetings[username] || []
+        }
+      }));
+    }
+
+    handleAddMeeting(data, callback) {
+      const { username, sessionID, title, date, startTime, endTime } = data;
+
+      if (!this.validateSession(username, sessionID)) {
+        callback(JSON.stringify({
+          status: 401,
+          message: "Invalid or expired session"
+        }));
+        return;
+      }
+
+      if (!title || !date || !startTime || !endTime) {
+        callback(JSON.stringify({
+          status: 400,
+          message: "All meeting details are required"
+        }));
+        return;
+      }
+
+      // Check if meeting with same title already exists
+      if (this.meetings[username] && this.meetings[username].some(m => m.title === title)) {
+        callback(JSON.stringify({
+          status: 409,
+          message: "Meeting with this title already exists"
+        }));
+        return;
+      }
+
+      // Validate time
+      if (startTime >= endTime) {
+        callback(JSON.stringify({
+          status: 400,
+          message: "End time must be after start time"
+        }));
+        return;
+      }
+
+      // Add meeting
+      if (!this.meetings[username]) {
+        this.meetings[username] = [];
+      }
+
+      this.meetings[username].push({
+        title,
+        date,
+        startTime,
+        endTime,
+        createdAt: new Date().toISOString()
+      });
+
+      callback(JSON.stringify({
+        status: 200,
+        message: "Meeting added successfully"
+      }));
+    }
+
+    handleUpdateMeeting(data, callback) {
+      const { username, sessionID, title, date, startTime, endTime } = data;
+
+      if (!this.validateSession(username, sessionID)) {
+        callback(JSON.stringify({
+          status: 401,
+          message: "Invalid or expired session"
+        }));
+        return;
+      }
+
+      if (!title || !date || !startTime || !endTime) {
+        callback(JSON.stringify({
+          status: 400,
+          message: "All meeting details are required"
+        }));
+        return;
+      }
+
+      // Check if meeting exists
+      if (!this.meetings[username] || !this.meetings[username].some(m => m.title === title)) {
+        callback(JSON.stringify({
+          status: 404,
+          message: "Meeting not found"
+        }));
+        return;
+      }
+
+      // Validate time
+      if (startTime >= endTime) {
+        callback(JSON.stringify({
+          status: 400,
+          message: "End time must be after start time"
+        }));
+        return;
+      }
+
+      // Update meeting
+      const meetingIndex = this.meetings[username].findIndex(m => m.title === title);
+      this.meetings[username][meetingIndex] = {
+        ...this.meetings[username][meetingIndex],
+        date,
+        startTime,
+        endTime,
+        updatedAt: new Date().toISOString()
+      };
+
+      callback(JSON.stringify({
+        status: 200,
+        message: "Meeting updated successfully"
+      }));
+    }
+
+    handleRemoveMeeting(data, callback) {
+      const { username, sessionID, title } = data;
+
+      if (!this.validateSession(username, sessionID)) {
+        callback(JSON.stringify({
+          status: 401,
+          message: "Invalid or expired session"
+        }));
+        return;
+      }
+
+      if (!title) {
+        callback(JSON.stringify({
+          status: 400,
+          message: "Meeting title is required"
+        }));
+        return;
+      }
+
+      // Check if meeting exists
+      if (!this.meetings[username] || !this.meetings[username].some(m => m.title === title)) {
+        callback(JSON.stringify({
+          status: 404,
+          message: "Meeting not found"
+        }));
+        return;
+      }
+
+      // Remove meeting
+      this.meetings[username] = this.meetings[username].filter(m => m.title !== title);
+
+      callback(JSON.stringify({
+        status: 200,
+        message: "Meeting removed successfully"
+      }));
+    }
+
+    // Helper to validate session
+    validateSession(username, sessionID) {
+      return (
+              sessionID &&
+              this.sessions[sessionID] &&
+              this.sessions[sessionID].username === username
+      );
+    }
+
+    // Helper to generate session ID
+    generateSessionID() {
+      return Math.random().toString(36).substring(2, 15) +
+              Math.random().toString(36).substring(2, 15);
+    }
+  }
+</script>
+<script>
+  // Load the client code here
+  // FAJAX - Fake AJAX for client-server communication
+  class FXMLHttpRequest {
+    constructor() {
+      this.readyState = 0;
+      this.status = 0;
+      this.responseText = "";
+      this.onreadystatechange = null;
+      this.method = "";
+      this.url = "";
+      this.requestBody = null;
+    }
+
+    open(method, url) {
+      this.method = method;
+      this.url = url;
+      this.readyState = 1;
+      if (this.onreadystatechange) this.onreadystatechange();
+    }
+
+    setRequestHeader() {
+      // Not needed for this implementation
+    }
+
+    send(body) {
+      this.requestBody = body;
+      this.readyState = 2;
+      if (this.onreadystatechange) this.onreadystatechange();
+
+      // Simulate network delay and potential packet loss
+      Network.sendRequest(this.method, this.url, this.requestBody, (response) => {
+        this.responseText = response;
+        this.readyState = 4;
+        this.status = JSON.parse(response).status;
+        if (this.onreadystatechange) this.onreadystatechange();
+      });
+    }
+  }
+
+  // Network simulation class
+  class Network {
+    static servers = {};
+    static packetLossRate = 0.1; // 10% packet loss by default
+
+    static registerServer(url, server) {
+      this.servers[url] = server;
+    }
+
+    static sendRequest(method, url, body, callback) {
+      // Simulate network delay (1-3 seconds)
+      const delay = Math.random() * 2000 + 1000;
+
+      // Simulate packet loss
+      if (Math.random() < this.packetLossRate) {
+        console.log("Network: Packet lost!");
+        return;
+      }
+
+      setTimeout(() => {
+        // Find the appropriate server for the URL
+        const serverUrl = url.split('/')[0];
+        if (this.servers[serverUrl]) {
+          this.servers[serverUrl].handleRequest(method, url, body, callback);
+        } else {
+          callback(JSON.stringify({
+            status: 404,
+            message: "Server not found"
+          }));
+        }
+      }, delay);
+    }
+  }
+
+  // Client-side code for the calendar application
+  // Client-side code for the calendar application
+  class CalendarClient {
+    constructor() {
+      this.sessionID = localStorage.getItem('sessionID') || null;
+      this.username = localStorage.getItem('username') || null;
+      this.baseUrl = "/meetings";
+      this.initEventListeners();
+      this.updateUIState();
+    }
+
+    // Initialize event listeners
+    initEventListeners() {
+      // Login form
+      document.getElementById('login-form')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+        this.login(username, password);
+      });
+
+      // Register form
+      document.getElementById('register-form')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('register-username').value;
+        const password = document.getElementById('register-password').value;
+        const email = document.getElementById('register-email').value;
+        this.register(username, password, email);
+      });
+
+      // Logout button
+      document.getElementById('logout-btn')?.addEventListener('click', () => {
+        this.logout();
+      });
+
+      // Add meeting form
+      document.getElementById('meeting-form')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const title = document.getElementById('meeting-title').value;
+        const date = document.getElementById('meeting-date').value;
+        const startTime = document.getElementById('meeting-start').value;
+        const endTime = document.getElementById('meeting-end').value;
+
+        if (document.getElementById('meeting-form').dataset.mode === 'edit') {
+          const originalTitle = document.getElementById('meeting-form').dataset.originalTitle;
+          this.updateMeeting(originalTitle, title, date, startTime, endTime);
+        } else {
+          this.addMeeting(title, date, startTime, endTime);
+        }
+      });
+
+      // Cancel button for meeting form
+      document.getElementById('cancel-meeting-btn')?.addEventListener('click', () => {
+        this.resetMeetingForm();
+      });
+    }
+
+    // Update UI based on authentication state
+    updateUIState() {
+      const isLoggedIn = !!this.sessionID;
+
+      // Show/hide elements based on login state
+      document.querySelectorAll('.auth-required').forEach(el => {
+        el.style.display = isLoggedIn ? 'block' : 'none';
+      });
+
+      document.querySelectorAll('.no-auth-required').forEach(el => {
+        el.style.display = isLoggedIn ? 'none' : 'block';
+      });
+
+      // Show username if logged in
+      if (isLoggedIn && this.username) {
+        document.getElementById('user-info').textContent = `Logged in as: ${this.username}`;
+      }
+
+      // Refresh meetings list if logged in
+      if (isLoggedIn) {
+        this.fetchMeetings();
+      }
+    }
+
+    // Function 1: Login
+    login(username, password) {
+      const xhr = new FXMLHttpRequest();
+      xhr.open("POST", "/login");
+
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            const response = JSON.parse(xhr.responseText);
+            this.sessionID = response.data.sessionID;
+            this.username = username;
+
+            // Store session info
+            localStorage.setItem('sessionID', this.sessionID);
+            localStorage.setItem('username', this.username);
+
+            this.updateUIState();
+            this.showNotification('Login successful!', 'success');
+          } else {
+            const response = JSON.parse(xhr.responseText);
+            this.showNotification(response.message || 'Login failed!', 'error');
+          }
+        }
+      };
+
+      // Hash the password before sending
+      const hashedPassword = this.hashPassword(password);
+      const requestBody = JSON.stringify({
+        username: username,
+        password: hashedPassword
+      });
+
+      xhr.send(requestBody);
+    }
+
+    // Register new user
+    register(username, password, email) {
+      const xhr = new FXMLHttpRequest();
+      xhr.open("POST", "/register");
+
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            const response = JSON.parse(xhr.responseText);
+            this.sessionID = response.data.sessionID;
+            this.username = username;
+
+            // Store session info
+            localStorage.setItem('sessionID', this.sessionID);
+            localStorage.setItem('username', this.username);
+
+            this.updateUIState();
+            this.showNotification('Registration successful!', 'success');
+          } else {
+            const response = JSON.parse(xhr.responseText);
+            this.showNotification(response.message || 'Registration failed!', 'error');
+          }
+        }
+      };
+
+      // Hash the password before sending
+      const hashedPassword = this.hashPassword(password);
+      const requestBody = JSON.stringify({
+        username: username,
+        password: hashedPassword,
+        email: email
+      });
+
+      xhr.send(requestBody);
+    }
+
+    // Function 2: Logout
+    logout() {
+      if (!this.sessionID || !this.username) {
+        this.showNotification('Not logged in!', 'error');
+        return;
+      }
+
+      const xhr = new FXMLHttpRequest();
+      xhr.open("POST", "/logout");
+
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          // Clear session regardless of server response
+          this.sessionID = null;
+          this.username = null;
+          localStorage.removeItem('sessionID');
+          localStorage.removeItem('username');
+
+          if (xhr.status === 200) {
+            this.showNotification('Logout successful!', 'success');
+          }
+
+          this.updateUIState();
+        }
+      };
+
+      const requestBody = JSON.stringify({
+        username: this.username,
+        sessionID: this.sessionID
+      });
+
+      xhr.send(requestBody);
+    }
+
+    // Fetch all meetings
+    fetchMeetings() {
+      if (!this.sessionID || !this.username) {
+        this.showNotification('Please log in to view meetings', 'error');
+        return;
+      }
+
+      const xhr = new FXMLHttpRequest();
+      xhr.open("GET", this.baseUrl);
+
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            const response = JSON.parse(xhr.responseText);
+            this.displayMeetings(response.data.meetings || []);
+          } else {
+            const response = JSON.parse(xhr.responseText);
+            this.showNotification(response.message || 'Failed to load meetings!', 'error');
+          }
+        }
+      };
+
+      const requestBody = JSON.stringify({
+        username: this.username,
+        sessionID: this.sessionID
+      });
+
+      xhr.send(requestBody);
+    }
+
+    // Function 3: Add meeting
+    addMeeting(title, date, startTime, endTime) {
+      if (!this.sessionID || !this.username) {
+        this.showNotification('Please log in to add meetings', 'error');
+        return;
+      }
+
+      const xhr = new FXMLHttpRequest();
+      xhr.open("POST", this.baseUrl);
+
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            this.showNotification('Meeting added successfully!', 'success');
+            this.resetMeetingForm();
+            this.fetchMeetings();
+          } else {
+            const response = JSON.parse(xhr.responseText);
+            this.showNotification(response.message || 'Failed to add meeting!', 'error');
+          }
+        }
+      };
+
+      const requestBody = JSON.stringify({
+        username: this.username,
+        sessionID: this.sessionID,
+        title: title,
+        date: date,
+        startTime: startTime,
+        endTime: endTime
+      });
+
+      xhr.send(requestBody);
+    }
+
+    // Function 4: Remove meeting
+    removeMeeting(title) {
+      if (!this.sessionID || !this.username) {
+        this.showNotification('Please log in to remove meetings', 'error');
+        return;
+      }
+
+      const xhr = new FXMLHttpRequest();
+      xhr.open("DELETE", this.baseUrl);
+
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            this.showNotification('Meeting removed successfully!', 'success');
+            this.fetchMeetings();
+          } else {
+            const response = JSON.parse(xhr.responseText);
+            this.showNotification(response.message || 'Failed to remove meeting!', 'error');
+          }
+        }
+      };
+
+      const requestBody = JSON.stringify({
+        username: this.username,
+        sessionID: this.sessionID,
+        title: title
+      });
+
+      xhr.send(requestBody);
+    }
+
+    // Function 5: Update meeting
+    updateMeeting(originalTitle, title, date, startTime, endTime) {
+      if (!this.sessionID || !this.username) {
+        this.showNotification('Please log in to update meetings', 'error');
+        return;
+      }
+
+      const xhr = new FXMLHttpRequest();
+      xhr.open("PUT", this.baseUrl);
+
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            this.showNotification('Meeting updated successfully!', 'success');
+            this.resetMeetingForm();
+            this.fetchMeetings();
+          } else {
+            const response = JSON.parse(xhr.responseText);
+            this.showNotification(response.message || 'Failed to update meeting!', 'error');
+          }
+        }
+      };
+
+      const requestBody = JSON.stringify({
+        username: this.username,
+        sessionID: this.sessionID,
+        originalTitle: originalTitle,
+        title: title,
+        date: date,
+        startTime: startTime,
+        endTime: endTime
+      });
+
+      xhr.send(requestBody);
+    }
+
+    // Display meetings in the UI
+    displayMeetings(meetings) {
+      const container = document.getElementById('meetings-container');
+
+      if (!container) {
+        console.error('Meetings container element not found');
+        return;
+      }
+
+      // Clear existing meetings
+      container.innerHTML = '';
+
+      if (meetings.length === 0) {
+        container.innerHTML = '<p class="no-meetings">No meetings scheduled.</p>';
+        return;
+      }
+
+      // Sort meetings by date and time
+      meetings.sort((a, b) => {
+        const dateA = new Date(`${a.date}T${a.startTime}`);
+        const dateB = new Date(`${b.date}T${b.startTime}`);
+        return dateA - dateB;
+      });
+
+      // Create meeting elements
+      meetings.forEach(meeting => {
+        const meetingEl = document.createElement('div');
+        meetingEl.className = 'meeting-item';
+
+        const dateObj = new Date(meeting.date);
+        const formattedDate = dateObj.toLocaleDateString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+
+        meetingEl.innerHTML = `
+        <h3>${meeting.title}</h3>
+        <p class="meeting-date">${formattedDate}</p>
+        <p class="meeting-time">${meeting.startTime} - ${meeting.endTime}</p>
+        <div class="meeting-actions">
+          <button class="edit-btn" data-title="${meeting.title}">Edit</button>
+          <button class="delete-btn" data-title="${meeting.title}">Delete</button>
+        </div>
+      `;
+
+        container.appendChild(meetingEl);
+      });
+
+      // Add event listeners for edit and delete buttons
+      document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const title = e.target.dataset.title;
+          this.editMeeting(title, meetings);
+        });
+      });
+
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const title = e.target.dataset.title;
+          if (confirm(`Are you sure you want to delete "${title}"?`)) {
+            this.removeMeeting(title);
+          }
+        });
+      });
+    }
+
+    // Load meeting data into form for editing
+    editMeeting(title, meetings) {
+      const meeting = meetings.find(m => m.title === title);
+      if (!meeting) {
+        this.showNotification('Meeting not found', 'error');
+        return;
+      }
+
+      // Populate form fields
+      document.getElementById('meeting-title').value = meeting.title;
+      document.getElementById('meeting-date').value = meeting.date;
+      document.getElementById('meeting-start').value = meeting.startTime;
+      document.getElementById('meeting-end').value = meeting.endTime;
+
+      // Set form to edit mode
+      const form = document.getElementById('meeting-form');
+      form.dataset.mode = 'edit';
+      form.dataset.originalTitle = meeting.title;
+
+      // Update submit button text
+      document.getElementById('submit-meeting-btn').textContent = 'Update Meeting';
+
+      // Scroll to form
+      form.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Reset meeting form to add mode
+    resetMeetingForm() {
+      const form = document.getElementById('meeting-form');
+
+      // Clear form fields
+      form.reset();
+
+      // Reset form mode
+      form.dataset.mode = 'add';
+      delete form.dataset.originalTitle;
+
+      // Reset submit button text
+      document.getElementById('submit-meeting-btn').textContent = 'Add Meeting';
+    }
+
+    // Show notification to user
+    showNotification(message, type) {
+      const notificationEl = document.getElementById('notification');
+
+      if (!notificationEl) {
+        console.error('Notification element not found');
+        return;
+      }
+
+      notificationEl.textContent = message;
+      notificationEl.className = `notification ${type}`;
+      notificationEl.style.display = 'block';
+
+      // Auto-hide notification after 3 seconds
+      setTimeout(() => {
+        notificationEl.style.display = 'none';
+      }, 3000);
+    }
+
+    // Hash password (basic implementation - use a proper library in production)
+    hashPassword(password) {
+      // Simple hash function (not secure for production)
+      let hash = 0;
+      for (let i = 0; i < password.length; i++) {
+        const char = password.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+      }
+      return hash.toString(16);
+    }
+
+    // Verify if current session is valid
+    verifySession() {
+      if (!this.sessionID || !this.username) {
+        return Promise.resolve(false);
+      }
+
+      return new Promise((resolve) => {
+        const xhr = new FXMLHttpRequest();
+        xhr.open("POST", "/verify-session");
+
+        xhr.onreadystatechange = () => {
+          if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+              resolve(true);
+            } else {
+              // Invalid session, clear storage
+              this.sessionID = null;
+              this.username = null;
+              localStorage.removeItem('sessionID');
+              localStorage.removeItem('username');
+              this.updateUIState();
+              resolve(false);
+            }
+          }
+        };
+
+        const requestBody = JSON.stringify({
+          username: this.username,
+          sessionID: this.sessionID
+        });
+
+        xhr.send(requestBody);
+      });
+    }
+  }
+
+
+  // Initialize the calendar client when the DOM is loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    window.calendarClient = new CalendarClient();
+  });
+
+</script>
