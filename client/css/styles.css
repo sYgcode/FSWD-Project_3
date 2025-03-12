@@ -110,6 +110,7 @@ input:focus {
     width: 100%;
     display: flex;
     flex-direction: column;
+    height: 100vh;
 }
 
 .app-header {
@@ -131,54 +132,67 @@ input:focus {
     display: flex;
     flex: 1;
     height: calc(100vh - 70px);
+    overflow: hidden;
 }
 
 .calendar-sidebar {
     width: 300px;
+    min-width: 300px;
     padding: 1.5rem;
     background-color: white;
     border-right: 1px solid #eee;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    overflow-y: auto;
+    height: 100%;
 }
 
 .meeting-list {
     flex: 1;
     overflow-y: auto;
+    padding-right: 0.5rem;
 }
 
 .calendar-main {
     flex: 1;
     padding: 1.5rem;
+    overflow-y: auto;
+    height: 100%;
 }
 
 /* Meeting List */
 #meetings-list {
     list-style: none;
+    margin-top: 0.5rem;
 }
 
 .meeting-item {
     padding: 1rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
     background-color: #f8f9fa;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
+    border-left: 3px solid #3498db;
 }
 
 .meeting-item:hover {
     background-color: #e9ecef;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .meeting-item h4 {
     margin-bottom: 0.25rem;
     color: #2c3e50;
+    font-weight: 600;
 }
 
 .meeting-item p {
     font-size: 0.9rem;
     color: #6c757d;
+    margin: 0;
 }
 
 /* Calendar View */
@@ -188,6 +202,77 @@ input:focus {
     height: 100%;
     padding: 1.5rem;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    overflow-y: auto;
+}
+
+/* Calendar Table Styles */
+.calendar-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 2px;
+}
+
+.calendar-table th {
+    padding: 0.75rem;
+    text-align: center;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.calendar-day {
+    padding: 0.5rem;
+    height: 100px;
+    vertical-align: top;
+    border: 1px solid #eaeaea;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.calendar-day:hover {
+    background-color: #f8f9fa;
+}
+
+.day-number {
+    font-weight: 600;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.25rem;
+    border-bottom: 1px solid #eee;
+}
+
+.today {
+    background-color: #e8f4fc;
+    border: 1px solid #3498db;
+}
+
+.empty-day {
+    background-color: #f9f9f9;
+}
+
+.day-events {
+    margin-top: 0.25rem;
+    overflow-y: auto;
+    max-height: 65px;
+}
+
+.day-event {
+    padding: 0.25rem;
+    margin-bottom: 0.25rem;
+    background-color: #3498db;
+    color: white;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.day-event .event-time {
+    font-weight: bold;
+    font-size: 0.7rem;
+}
+
+.day-event .event-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Modal Styles */
@@ -248,11 +333,23 @@ input:focus {
     .calendar-content {
         flex-direction: column;
         height: auto;
+        overflow: visible;
     }
 
     .calendar-sidebar {
         width: 100%;
+        min-width: 100%;
         border-right: none;
         border-bottom: 1px solid #eee;
+        height: auto;
+        max-height: 300px;
+    }
+
+    .calendar-main {
+        height: auto;
+    }
+
+    .calendar-day {
+        height: 80px;
     }
 }
