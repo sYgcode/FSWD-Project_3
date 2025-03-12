@@ -1,5 +1,5 @@
 // fajax.js - Corrected implementation for client-server communication
-import { Network } from '/network/network.js';
+import { Network } from '../../network/network.js'; // Fixed relative path
 
 export class FXMLHttpRequest {
     constructor() {
@@ -18,6 +18,7 @@ export class FXMLHttpRequest {
         this.network = new Network(); // Create network instance directly
     }
 
+    // Rest of the code remains the same
     open(method, url) {
         this.method = method;
         this.url = url;
@@ -65,7 +66,7 @@ export class FXMLHttpRequest {
 
 // Utility functions for client-side API calls
 export const api = {
-    // Generic API request function
+    // The rest of the api object remains the same
     request(method, url, data = null) {
         return new Promise((resolve, reject) => {
             const xhr = new FXMLHttpRequest();
@@ -91,32 +92,27 @@ export const api = {
         });
     },
 
-    // Login
+    // The rest of the API methods remain the same
     login(username, password) {
         return this.request('POST', '/login', { username, password });
     },
 
-    // Register
     register(username, password, email) {
         return this.request('POST', '/register', { username, password, email });
     },
 
-    // Logout
     logout(username, sessionID) {
         return this.request('POST', '/logout', { username, sessionID });
     },
 
-    // Get meetings
     getMeetings(username, sessionID) {
         return this.request('GET', '/meetings', { username, sessionID });
     },
 
-    // Get single meeting
     getMeeting(username, sessionID, title) {
         return this.request('GET', '/meetings', { username, sessionID, title });
     },
 
-    // Add meeting
     addMeeting(username, sessionID, title, date, startTime, endTime) {
         return this.request('POST', '/meetings', {
             username,
@@ -128,7 +124,6 @@ export const api = {
         });
     },
 
-    // Update meeting
     updateMeeting(username, sessionID, title, date, startTime, endTime) {
         return this.request('PUT', '/meetings', {
             username,
@@ -140,7 +135,6 @@ export const api = {
         });
     },
 
-    // Delete meeting
     deleteMeeting(username, sessionID, title) {
         return this.request('DELETE', '/meetings', {
             username,
