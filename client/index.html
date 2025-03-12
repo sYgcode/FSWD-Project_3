@@ -1,130 +1,166 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meeting Calendar</title>
-    <link rel="stylesheet" href="css/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meeting Calendar App</title>
+  <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-<div class="container">
-    <header>
+<div id="app">
+  <!-- Login Page Template -->
+  <template id="login-template">
+    <div class="auth-container">
+      <h1>Meeting Calendar</h1>
+      <div class="auth-form">
+        <h2>Login</h2>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="login-username">Username</label>
+            <input type="text" id="login-username" required>
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" required>
+          </div>
+          <div class="form-group">
+            <button type="submit">Login</button>
+          </div>
+          <div class="form-footer">
+            <p>Don't have an account? <a href="#" id="show-register">Register</a></p>
+          </div>
+        </form>
+      </div>
+      <div id="login-error" class="error-message"></div>
+    </div>
+  </template>
+
+  <!-- Register Page Template -->
+  <template id="register-template">
+    <div class="auth-container">
+      <h1>Meeting Calendar</h1>
+      <div class="auth-form">
+        <h2>Register</h2>
+        <form id="register-form">
+          <div class="form-group">
+            <label for="register-username">Username</label>
+            <input type="text" id="register-username" required>
+          </div>
+          <div class="form-group">
+            <label for="register-email">Email</label>
+            <input type="email" id="register-email" required>
+          </div>
+          <div class="form-group">
+            <label for="register-password">Password</label>
+            <input type="password" id="register-password" required>
+          </div>
+          <div class="form-group">
+            <button type="submit">Register</button>
+          </div>
+          <div class="form-footer">
+            <p>Already have an account? <a href="#" id="show-login">Login</a></p>
+          </div>
+        </form>
+      </div>
+      <div id="register-error" class="error-message"></div>
+    </div>
+  </template>
+
+  <!-- Calendar Page Template -->
+  <template id="calendar-template">
+    <div class="calendar-container">
+      <header class="app-header">
         <h1>Meeting Calendar</h1>
-        <div id="user-info"></div>
-        <button id="logout-btn" class="auth-required">Logout</button>
-    </header>
+        <div class="user-info">
+          <span id="user-welcome">Welcome, <span id="username-display"></span></span>
+          <button id="logout-btn">Logout</button>
+        </div>
+      </header>
+      <div class="calendar-content">
+        <div class="calendar-sidebar">
+          <button id="add-meeting-btn" class="primary-btn">Add Meeting</button>
+          <div class="meeting-list">
+            <h3>Your Meetings</h3>
+            <ul id="meetings-list"></ul>
+          </div>
+        </div>
+        <div class="calendar-main">
+          <div id="calendar-view"></div>
+        </div>
+      </div>
+    </div>
+  </template>
 
-    <main>
-        <!-- Authentication Section -->
-        <section class="auth-section no-auth-required">
-            <div class="auth-tabs">
-                <button class="tab-btn active" data-tab="login">Login</button>
-                <button class="tab-btn" data-tab="register">Register</button>
-            </div>
+  <!-- Meeting Form Template (for Add/Edit) -->
+  <template id="meeting-form-template">
+    <div class="modal" id="meeting-modal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2 id="meeting-form-title">Add Meeting</h2>
+        <form id="meeting-form">
+          <div class="form-group">
+            <label for="meeting-title">Title</label>
+            <input type="text" id="meeting-title" required>
+          </div>
+          <div class="form-group">
+            <label for="meeting-date">Date</label>
+            <input type="date" id="meeting-date" required>
+          </div>
+          <div class="form-group">
+            <label for="meeting-start">Start Time</label>
+            <input type="time" id="meeting-start" required>
+          </div>
+          <div class="form-group">
+            <label for="meeting-end">End Time</label>
+            <input type="time" id="meeting-end" required>
+          </div>
+          <div class="form-group">
+            <button type="submit" id="meeting-submit-btn">Save Meeting</button>
+            <button type="button" id="meeting-cancel-btn">Cancel</button>
+          </div>
+        </form>
+        <div id="meeting-form-error" class="error-message"></div>
+      </div>
+    </div>
+  </template>
 
-            <div class="tab-content" id="login-tab">
-                <form id="login-form">
-                    <div class="form-group">
-                        <label for="login-username">Username:</label>
-                        <input type="text" id="login-username" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="login-password">Password:</label>
-                        <input type="password" id="login-password" required>
-                    </div>
-                    <button type="submit">Login</button>
-                </form>
-            </div>
+  <!-- Meeting Details Template -->
+  <template id="meeting-details-template">
+    <div class="modal" id="meeting-details-modal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2 id="meeting-details-title"></h2>
+        <div class="meeting-details">
+          <p><strong>Date:</strong> <span id="meeting-details-date"></span></p>
+          <p><strong>Time:</strong> <span id="meeting-details-time"></span></p>
+        </div>
+        <div class="meeting-actions">
+          <button id="edit-meeting-btn">Edit</button>
+          <button id="delete-meeting-btn">Delete</button>
+        </div>
+      </div>
+    </div>
+  </template>
 
-            <div class="tab-content hidden" id="register-tab">
-                <form id="register-form">
-                    <div class="form-group">
-                        <label for="register-username">Username:</label>
-                        <input type="text" id="register-username" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="register-password">Password:</label>
-                        <input type="password" id="register-password" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="register-email">Email:</label>
-                        <input type="email" id="register-email" required>
-                    </div>
-                    <button type="submit">Register</button>
-                </form>
-            </div>
-        </section>
-
-        <!-- Calendar Section -->
-        <section class="calendar-section auth-required">
-            <div class="add-meeting">
-                <h2>Manage Meetings</h2>
-                <form id="meeting-form" data-mode="add">
-                    <div class="form-group">
-                        <label for="meeting-title">Meeting Title:</label>
-                        <input type="text" id="meeting-title" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="meeting-date">Date:</label>
-                        <input type="date" id="meeting-date" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="meeting-start">Start Time:</label>
-                        <input type="time" id="meeting-start" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="meeting-end">End Time:</label>
-                        <input type="time" id="meeting-end" required>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" id="meeting-submit">Add Meeting</button>
-                        <button type="button" id="cancel-meeting-btn" style="display: none;">Cancel</button>
-                    </div>
-                </form>
-            </div>
-
-            <div class="meetings-list-container">
-                <h2>Your Meetings</h2>
-                <div id="meetings-list">
-                    <!-- Meetings will be displayed here -->
-                    <p>No meetings scheduled.</p>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer>
-        <p>&copy; 2025 Meeting Calendar App</p>
-    </footer>
+  <!-- Confirmation Dialog Template -->
+  <template id="confirm-dialog-template">
+    <div class="modal" id="confirm-modal">
+      <div class="modal-content modal-sm">
+        <h2 id="confirm-title">Confirm Action</h2>
+        <p id="confirm-message">Are you sure you want to proceed?</p>
+        <div class="confirm-actions">
+          <button id="confirm-yes-btn">Yes</button>
+          <button id="confirm-no-btn">No</button>
+        </div>
+      </div>
+    </div>
+  </template>
 </div>
 
-<!-- Include necessary JS files -->
-<script src="./database/db.js"></script>
-<script src="./network/network.js"></script>
-<script src="./server/server.js"></script>
-<script src="./client/client.js"></script>
-<script>
-    // Tab switching logic
-    document.querySelectorAll('.tab-btn').forEach(button => {
-        button.addEventListener('click', () => {
-            // Remove active class from all tabs
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
+<!-- Include all JavaScript files with correct paths -->
+<script type="module" src="js/app.js"></script>
 
-            // Add active class to clicked tab
-            button.classList.add('active');
-
-            // Hide all tab content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.add('hidden');
-            });
-
-            // Show selected tab content
-            const tabId = button.dataset.tab + '-tab';
-            document.getElementById(tabId).classList.remove('hidden');
-        });
-    });
-</script>
+<!-- The rest of these scripts will be imported by app.js as needed -->
+<!-- They are not needed here since we're using ES6 modules -->
 </body>
 </html>
