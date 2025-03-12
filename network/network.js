@@ -27,11 +27,11 @@ export class Network {
             // Pass response back to client through callback
             this.server.handleRequest(method, url, body, (response) => {
                 // Simulate response loss
-                if (Math.random() < this.dropProbability) {
-                    console.log("Response dropped");
-                    callback(this.server.genResponse(500, "Internal Server Error: Response lost"));
-                    return;
-                }
+                // if (Math.random() < this.dropProbability) {
+                //     console.log("Response dropped");
+                //     callback(this.server.genResponse(500, "Internal Server Error: Response lost"));
+                //     return;
+                // }
                 callback(response);
             });
         }, delay);
