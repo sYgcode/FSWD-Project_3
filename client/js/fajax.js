@@ -1,5 +1,5 @@
 // fajax.js - Corrected implementation for client-server communication
-import { Network } from '../../network/network.js'; // Fixed relative path
+import {Network} from '../../network/network.js'; // Fixed relative path
 
 export class FXMLHttpRequest {
     constructor() {
@@ -73,11 +73,11 @@ export const api = {
             xhr.open(method, url);
             xhr.setRequestHeader('Content-Type', 'application/json');
 
-            xhr.onload = function() {
+            xhr.onload = function () {
                 resolve(xhr.response);
             };
 
-            xhr.onerror = function() {
+            xhr.onerror = function () {
                 reject({
                     status: xhr.status,
                     statusText: xhr.statusText
@@ -94,23 +94,23 @@ export const api = {
 
     // The rest of the API methods remain the same
     login(username, password) {
-        return this.request('POST', '/login', { username, password });
+        return this.request('POST', '/login', {username, password});
     },
 
     register(username, password, email) {
-        return this.request('POST', '/register', { username, password, email });
+        return this.request('POST', '/register', {username, password, email});
     },
 
     logout(username, sessionID) {
-        return this.request('POST', '/logout', { username, sessionID });
+        return this.request('POST', '/logout', {username, sessionID});
     },
 
     getMeetings(username, sessionID) {
-        return this.request('GET', '/meetings', { username, sessionID });
+        return this.request('GET', '/meetings', {username, sessionID});
     },
 
     getMeeting(username, sessionID, title) {
-        return this.request('GET', '/meetings', { username, sessionID, title });
+        return this.request('GET', '/meetings', {username, sessionID, title});
     },
 
     addMeeting(username, sessionID, title, date, startTime, endTime) {

@@ -1,13 +1,14 @@
 // app.js - Main application entry point
-import { Router } from './router.js';
-import { AuthService } from './services/auth-service.js';
-import { MeetingService } from './services/meeting-service.js';
-import { LoginView } from './views/login-view.js';
-import { RegisterView } from './views/register-view.js';
-import { CalendarView } from './views/calendar-view.js';
-import { MeetingFormView } from './views/meeting-form-view.js';
-import { MeetingDetailsView } from './views/meeting-details-view.js';
-import { ConfirmDialogView } from './views/confirm-dialog-view.js';
+import {Router} from './router.js';
+import {AuthService} from './services/auth-service.js';
+import {MeetingService} from './services/meeting-service.js';
+import {LoginView} from './views/login-view.js';
+import {RegisterView} from './views/register-view.js';
+import {CalendarView} from './views/calendar-view.js';
+import {MeetingFormView} from './views/meeting-form-view.js';
+import {MeetingDetailsView} from './views/meeting-details-view.js';
+import {ConfirmDialogView} from './views/confirm-dialog-view.js';
+
 // Application class
 class App {
     constructor() {
@@ -78,7 +79,7 @@ class App {
             const response = await this.authService.login(username, password);
             if (response && response.status === 200) {
                 this.router.navigate('calendar');
-                return { success: true };
+                return {success: true};
             } else {
                 return {
                     success: false,
@@ -99,7 +100,7 @@ class App {
             const response = await this.authService.register(username, email, password);
             if (response && response.status === 200) {
                 this.router.navigate('calendar');
-                return { success: true };
+                return {success: true};
             } else {
                 return {
                     success: false,
@@ -169,7 +170,7 @@ class App {
             if (response && response.status === 200) {
                 // Reload meetings to refresh the list
                 await this.loadMeetings();
-                return { success: true };
+                return {success: true};
             } else {
                 return {
                     success: false,
@@ -204,7 +205,7 @@ class App {
             if (response && response.status === 200) {
                 // Reload meetings to refresh the list
                 await this.loadMeetings();
-                return { success: true };
+                return {success: true};
             } else {
                 return {
                     success: false,
@@ -236,7 +237,7 @@ class App {
             if (response && response.status === 200) {
                 // Reload meetings to refresh the list
                 await this.loadMeetings();
-                return { success: true };
+                return {success: true};
             } else {
                 return {
                     success: false,

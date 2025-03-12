@@ -1,5 +1,5 @@
 // Fixed auth-service.js with correct import path
-import { api } from '../fajax.js';
+import {api} from '../fajax.js';
 
 export class AuthService {
     constructor() {
@@ -105,7 +105,7 @@ export class AuthService {
         }
     }
 
-    // Simple hash function for passwords (NOT for production use)
+    // Simple hash function for passwords
     simpleHash(str) {
         let hash = 0;
         for (let i = 0; i < str.length; i++) {

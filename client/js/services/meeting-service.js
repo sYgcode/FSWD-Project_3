@@ -1,5 +1,5 @@
 // Fixed meeting-service.js with correct import path
-import { api } from '../fajax.js';
+import {api} from '../fajax.js';
 
 export class MeetingService {
     constructor() {
@@ -65,7 +65,7 @@ export class MeetingService {
 
     // Format meeting date for display
     formatDate(dateString) {
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const options = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'};
         return new Date(dateString).toLocaleDateString(undefined, options);
     }
 
