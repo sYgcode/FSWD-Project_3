@@ -1,5 +1,5 @@
-// auth-service.js - Handles user authentication
-import { api } from '../fajax.js';
+// Fixed auth-service.js with correct import path
+import { api } from '../fajax/fajax.js';
 
 export class AuthService {
     constructor() {
@@ -74,7 +74,7 @@ export class AuthService {
             // Hash the password
             const hashedPassword = this.simpleHash(password);
 
-            const response = await api.register(username, hashedPassword, email);
+            const response = await api.register(username, email, hashedPassword);
 
             if (response && response.status === 200 && response.data) {
                 const userData = {

@@ -1,4 +1,5 @@
-// FAJAX.js - Fake AJAX implementation for client-server communication
+// fajax.js - Corrected implementation for client-server communication
+import { Network } from '../network/network.js';
 
 export class FXMLHttpRequest {
     constructor() {
@@ -14,7 +15,7 @@ export class FXMLHttpRequest {
         this.url = '';
         this.requestHeaders = {};
         this.responseHeaders = {};
-        this.network = null;
+        this.network = new Network(); // Create network instance directly
     }
 
     open(method, url) {
@@ -36,34 +37,28 @@ export class FXMLHttpRequest {
             this.onreadystatechange();
         }
 
-        // Import Network dynamically to avoid circular dependency
-        import('../network/network.js').then(module => {
-            const Network = module.Network;
-            this.network = new Network();
+        this.network.sendRequest(this.method, this.url, body, (response) => {
+            this.readyState = 4;
+            const parsedResponse = JSON.parse(response);
 
-            this.network.sendRequest(this.method, this.url, body, (response) => {
-                this.readyState = 4;
-                const parsedResponse = JSON.parse(response);
+            this.status = parsedResponse.status;
+            this.statusText = parsedResponse.message;
+            this.responseText = response;
+            this.response = parsedResponse;
 
-                this.status = parsedResponse.status;
-                this.statusText = parsedResponse.message;
-                this.responseText = response;
-                this.response = parsedResponse;
+            if (this.onreadystatechange) {
+                this.onreadystatechange();
+            }
 
-                if (this.onreadystatechange) {
-                    this.onreadystatechange();
+            if (this.status >= 200 && this.status < 300) {
+                if (this.onload) {
+                    this.onload();
                 }
-
-                if (this.status >= 200 && this.status < 300) {
-                    if (this.onload) {
-                        this.onload();
-                    }
-                } else {
-                    if (this.onerror) {
-                        this.onerror();
-                    }
+            } else {
+                if (this.onerror) {
+                    this.onerror();
                 }
-            });
+            }
         });
     }
 }

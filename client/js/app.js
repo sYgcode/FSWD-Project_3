@@ -8,6 +8,7 @@ import { CalendarView } from './views/calendar-view.js';
 import { MeetingFormView } from './views/meeting-form-view.js';
 import { MeetingDetailsView } from './views/meeting-details-view.js';
 import { ConfirmDialogView } from './views/confirm-dialog-view.js';
+import { Network } from '/network/network';
 
 // Application class
 class App {
