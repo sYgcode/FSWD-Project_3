@@ -1,7 +1,8 @@
+// Fixed db.js with bug fixes
 export class DB {
     // id of our database
     DBid = 0;
-    idCounter = 0; // for each item in our db it will have a unique id 
+    idCounter = 0; // for each item in our db it will have a unique id
     DBData = []; // store the key of each item belonging to our db
     static savedWords = ["", "idCounter", "session"]; // keep track of savedwords for security reasons
 
@@ -13,7 +14,8 @@ export class DB {
         const storedData = localStorage.getItem(DBid);
         if (storedData) {
             this.DBData = JSON.parse(storedData);
-            this.idCounter = JSON.parse(localStorage.getItem(DBid+"idCounter"));
+            const storedCounter = localStorage.getItem(DBid+"idCounter");
+            this.idCounter = storedCounter ? JSON.parse(storedCounter) : 0;
         } else {
             this.DBData = [];
             localStorage.setItem(DBid, JSON.stringify(this.DBData));
@@ -25,9 +27,12 @@ export class DB {
     get() {
         let returnData = [];
         for (let entry of this.DBData) {
-            let obj = JSON.parse(localStorage.getItem(this.DBid+entry));
-            if (obj.DBid === this.DBid){
-                returnData += obj;
+            const storedItem = localStorage.getItem(this.DBid+entry);
+            if (storedItem) {
+                let obj = JSON.parse(storedItem);
+                if (obj.DBid === this.DBid){
+                    returnData.push(obj);
+                }
             }
         }
 
@@ -45,7 +50,6 @@ export class DB {
     // helper function on if something exists in our database
     doesExistInDB(key) {
         for (let entry of this.DBData){
-            console.log(entry);
             if (entry == key)
                 return true;
         }
@@ -78,9 +82,11 @@ export class DB {
             if(entry == key)
                 return false;
         }
-        if(!this.doesExistInDB)
+
+        if(!this.doesExistInDB(key))
             return false;
-        localStorage.removeItem(this.DBid+key)
+
+        localStorage.removeItem(this.DBid+key);
         for (let i in this.DBData){
             if(this.DBData[i] == key){
                 this.DBData.splice(i, 1);
@@ -97,12 +103,19 @@ export class DB {
             if(entry == key)
                 return false;
         }
-        if(!this.doesExistInDB)
+
+        if(!this.doesExistInDB(key))
             return false;
-        obj.DBitemID = JSON.parse(localStorage.getItem(this.DBid+key)).DBitemID;
+
+        const existingItem = localStorage.getItem(this.DBid+key);
+        if (!existingItem)
+            return false;
+
+        const existingObj = JSON.parse(existingItem);
+        obj.DBid = this.DBid;
+        obj.DBitemID = existingObj.DBitemID;
+
         localStorage.setItem(this.DBid+key, JSON.stringify(obj));
         return true;
     }
 }
-
-

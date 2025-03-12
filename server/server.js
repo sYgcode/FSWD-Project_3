@@ -1,4 +1,5 @@
-import { DB } from "../../database/db.js";
+// Fixed server.js with correct import path
+import { DB } from "../database/db.js";
 
 // example user
 const User = {
@@ -6,6 +7,7 @@ const User = {
     password: 3009094, // MAKE SURE THE VALUE PUT IN IS A HASH AND NOT THE REAL PASSWORD
     email: "example@example.com"
 } // when a user obj is returned it includes the data field which is a list of meeting titles that belong to him
+
 // example meeting
 const meeting = {
     title: "...", // the key (As in only one of each)
@@ -28,7 +30,7 @@ export class Server {
         if(url=="/login" && method=="POST"){
             callback(this.login(body));
         } else if(url=="/register" && method=="POST"){
-            callback(this.register(body)); 
+            callback(this.register(body));
         } else if(url=="/logout" && method=="POST"){
             callback(this.logout(body));
         } else if (url=="/meetings"){
@@ -88,31 +90,23 @@ export class Server {
 
     login(body) {
         if(body.hasOwnProperty("username") && body.hasOwnProperty("password")){
-            let userInfo = JSON.parse(this.getUserByKey(body))
-            if(userInfo.status == 200){
-                if (body.username == userInfo.data.username && body.password == userInfo.data.password){
-                    let newId = this.addSession(body.username);
-                    return this.genResponse(200, "Ok", {sessionID: newId})
-                }
+            let userInfo = this.userDB.getByKey(body.username);
+            if (!userInfo) {
+                return this.genResponse(404, "Not Found: User does not exist");
+            }
+
+            if (body.username === userInfo.username && body.password == userInfo.password) {
+                let newId = this.addSession(body.username);
+                return this.genResponse(200, "Ok", {sessionID: newId});
             }
         }
         return this.genResponse(403, "Forbidden: Authentication is invalid");
     }
 
     logout(body) {
-        console.log(body);
-        console.log(body.hasOwnProperty("username"));
-        console.log(body.hasOwnProperty("sessionID"));
         if(body.hasOwnProperty("username") && body.hasOwnProperty("sessionID") && this.authenticate(body.username, body.sessionID)){
-            let userInfo = JSON.parse(this.getUserByKey(body))
-            console.log(userInfo);
-            console.log(body.username);
-            if(userInfo.status == 200){
-                if (body.username == userInfo.data.username){
-                    this.removeSession(body.username);
-                    return this.genResponse(200, "Ok")
-                }
-            }
+            this.removeSession(body.username);
+            return this.genResponse(200, "Ok");
         }
         return this.genResponse(400, "Bad Request: Missing required fields");
     }
@@ -122,15 +116,16 @@ export class Server {
         // confirm the body of the request has the username and then retrieve the data
         if (body.hasOwnProperty("username")){
             let returnData = this.userDB.getByKey(body.username);
-            if (!(body.hasOwnProperty("password") && returnData.password == body.password)){
-                returnData = {username: returnData.username, password:body.password, email: returnData.email};
-            } else {
-                returnData = {username: returnData.username, password:body.password, email: returnData.email, data: returnData.data};
-            }
             if (!returnData)
                 return this.genResponse(404, "Not Found: User does not exist in DB");
+
+            if (!(body.hasOwnProperty("password") && returnData.password == body.password)){
+                returnData = {username: returnData.username, email: returnData.email};
+            } else {
+                returnData = {username: returnData.username, password: returnData.password, email: returnData.email, data: returnData.data};
+            }
+
             return this.genResponse(200, "Ok", returnData);
-            
         }
         // return a 403 if the request is invalid
         return this.getUser();
@@ -155,18 +150,17 @@ export class Server {
     userPut(body){
         // confirm the body of the request has the username, password, and email
         if (body.hasOwnProperty("username") && body.hasOwnProperty("password") && body.hasOwnProperty("email")){
-            let resp = JSON.parse(this.getUserByKey(body));
-            console.log("sup2" + resp.status);
-            if(resp.status != 200)
+            const userInfo = this.userDB.getByKey(body.username);
+            if(!userInfo)
                 return this.genResponse(404, "Not Found: User does not exist in DB");
+
             let newData;
             if(!body.hasOwnProperty("data")){
-                newData = {username: body.username, password: body.password, email: body.email, data: resp.data.data};
-                console.log("sup1" + body.data);
-            }else{
-                console.log("sup" + body.data);
+                newData = {username: body.username, password: body.password, email: body.email, data: userInfo.data || []};
+            } else {
                 newData = {username: body.username, password: body.password, email: body.email, data: body.data};
             }
+
             // update the user in the db
             let success = this.userDB.update(body.username, newData);
             if (!success)
@@ -189,8 +183,8 @@ export class Server {
 
     // method to authenticate a user
     authenticate(username, sessionID) {
-        let session = this.userDB.getByKey(username + "session").sessionID;
-        if(session == sessionID){
+        const sessionData = this.userDB.getByKey(username + "session");
+        if(sessionData && sessionData.sessionID == sessionID){
             return true;
         }
         return false;
@@ -201,18 +195,30 @@ export class Server {
         if(!(body.hasOwnProperty("sessionID") && body.hasOwnProperty("username") && this.authenticate(body.username, body.sessionID))){
             return this.genResponse(403, "Forbidden: Authentication is invalid");
         }
+
         // get user data
-        let authData = this.getUserByKey(body);
-        if(authData.status != 200){
-            return this.genResponse(404, "Not Found");
+        const userData = this.userDB.getByKey(body.username);
+        if(!userData){
+            return this.genResponse(404, "Not Found: User not found");
         }
+
         // get the meetings for the user
         let returnData = [];
-        authData.data.data.forEach(title => {
-            let temp = this.meetingDB.getByKey(body.username + title);
-            temp = {title: temp.title, date: temp.date, startTime: temp.startTime, endTime: temp.endTime}
-            returnData.push(temp);
-        });
+        if (userData.data && Array.isArray(userData.data)) {
+            userData.data.forEach(title => {
+                const meeting = this.meetingDB.getByKey(body.username + title);
+                if (meeting) {
+                    const temp = {
+                        title: meeting.title,
+                        date: meeting.date,
+                        startTime: meeting.startTime,
+                        endTime: meeting.endTime
+                    };
+                    returnData.push(temp);
+                }
+            });
+        }
+
         // return the meetings
         return this.genResponse(200, "Ok", {meetings: returnData});
     }
@@ -223,23 +229,31 @@ export class Server {
         if(!(body.hasOwnProperty("sessionID") && body.hasOwnProperty("username") && this.authenticate(body.username, body.sessionID))){
             return this.genResponse(403, "Forbidden: Authentication is invalid");
         }
+
         // get the user data
-        let authData = this.getUserByKey(body);
-        if(authData.status != 200){
-            return this.genResponse(404, "Not Found");
+        const userData = this.userDB.getByKey(body.username);
+        if(!userData){
+            return this.genResponse(404, "Not Found: User not found");
         }
+
         if(!body.hasOwnProperty("title")){
             return this.genResponse(400, "Bad Request: Missing information");
         }
+
         // confirm the user has the meeting
-        if(authData.data.data.includes(body.title)){
-            returnData = this.meetingDB.getByKey(body.username + body.title);
-            if(returnData && returnData.hasOwnProperty("owner") && returnData.owner==body.username){
-                let temp = {title: returnData.title, date: returnData.date, startTime: returnData.startTime, endTime: returnData.endTime}
+        if(userData.data && userData.data.includes(body.title)){
+            const meeting = this.meetingDB.getByKey(body.username + body.title);
+            if(meeting && meeting.owner === body.username){
+                const temp = {
+                    title: meeting.title,
+                    date: meeting.date,
+                    startTime: meeting.startTime,
+                    endTime: meeting.endTime
+                };
                 return this.genResponse(200, "Ok", temp);
             }
         }
-        return this.genResponse(404, "Not Found");
+        return this.genResponse(404, "Not Found: Meeting not found");
     }
 
     // post request to the meeting db
@@ -247,27 +261,47 @@ export class Server {
         if(!(body.hasOwnProperty("sessionID") && body.hasOwnProperty("username") && this.authenticate(body.username, body.sessionID))){
             return this.genResponse(403, "Forbidden: Authentication is invalid");
         }
+
         const properties = ["username", "title", "date", "startTime", "endTime"];
         let allExist = properties.every(property => body.hasOwnProperty(property));
         if(!allExist){
             return this.genResponse(400, "Bad Request: Missing information");
         }
-        let authData = this.getUserByKey(body);
-        if(authData.data.data.includes(body.title)){
+
+        const userData = this.userDB.getByKey(body.username);
+        if(!userData) {
+            return this.genResponse(404, "Not Found: User not found");
+        }
+
+        if(!userData.data) {
+            userData.data = [];
+        }
+
+        if(userData.data.includes(body.title)){
             return this.genResponse(409, "Conflict: Meeting already exists");
         }
-        let newMeeting = {title: body.title, date: body.date, startTime: body.startTime, endTime: body.endTime, owner: body.username};
-        let success = this.meetingDB.add(body.username + body.title, newMeeting);
+
+        const newMeeting = {
+            title: body.title,
+            date: body.date,
+            startTime: body.startTime,
+            endTime: body.endTime,
+            owner: body.username
+        };
+
+        const success = this.meetingDB.add(body.username + body.title, newMeeting);
         if (!success)
             return this.genResponse(409, "Conflict: Meeting already exists");
-        authData.data.data.push(body.title);
-        console.log(authData.data);
-        let userResp1 = this.userPut(authData.data);
-        userResp1 = JSON.parse(userResp1);
-        if(userResp1.hasOwnProperty("status") && (userResp1.status == 200 || userResp1.status == 500)){
-            return this.genResponse(200, "Ok", newMeeting);
+
+        userData.data.push(body.title);
+
+        const updateSuccess = this.userDB.update(body.username, userData);
+        if (!updateSuccess) {
+            this.meetingDB.delete(body.username + body.title);
+            return this.genResponse(500, "Internal Server Error: Failed to update user data");
         }
-        return this.genResponse(500, "Internal Server Error");
+
+        return this.genResponse(200, "Ok", newMeeting);
     }
 
     // put request to the meeting db
@@ -275,15 +309,25 @@ export class Server {
         if(!(body.hasOwnProperty("sessionID") && body.hasOwnProperty("username") && this.authenticate(body.username, body.sessionID))){
             return this.genResponse(403, "Forbidden: Authentication is invalid");
         }
+
         const properties = ["username", "title", "date", "startTime", "endTime"];
         let allExist = properties.every(property => body.hasOwnProperty(property));
         if(!allExist){
             return this.genResponse(400, "Bad Request: Missing information");
         }
-        let meeting = {title: body.title, date: body.date, startTime: body.startTime, endTime: body.endTime, owner: body.username};
-        let success = this.meetingDB.update(body.username + body.title, meeting);
+
+        const meeting = {
+            title: body.title,
+            date: body.date,
+            startTime: body.startTime,
+            endTime: body.endTime,
+            owner: body.username
+        };
+
+        const success = this.meetingDB.update(body.username + body.title, meeting);
         if (!success)
             return this.genResponse(404, "Not Found: Meeting does not exist");
+
         return this.genResponse(200, "Ok", meeting);
     }
 
@@ -292,25 +336,32 @@ export class Server {
         if(!(body.hasOwnProperty("sessionID") && body.hasOwnProperty("username") && this.authenticate(body.username, body.sessionID))){
             return this.genResponse(403, "Forbidden: Authentication is invalid");
         }
+
         const properties = ["username", "title"];
-        
         let allExist = properties.every(property => body.hasOwnProperty(property));
         if(!allExist){
             return this.genResponse(400, "Bad Request: Missing information");
         }
-        let authData = this.getUserByKey(body);
-        if(authData.data.data.includes(body.title)){
-            let success = this.meetingDB.delete(body.username + body.title);
-            if (!success)
-                return this.genResponse(404, "Not Found: Meeting does not exist");
-            authData.data.data = authData.data.data.filter(title => title != body.title);
-            let userResp1 = this.userPut(authData.data);
-            userResp1 = JSON.parse(userResp1);
-            if(userResp1.hasOwnProperty("status") && (userResp1.status == 200 || userResp1.status == 500)){
-                return this.genResponse(200, "Ok");
-            }
-            return this.genResponse(500, "Internal Server Error");
+
+        const userData = this.userDB.getByKey(body.username);
+        if(!userData) {
+            return this.genResponse(404, "Not Found: User not found");
         }
-        return this.genResponse(404, "Not Found: Meeting does not exist");
+
+        if(!userData.data || !userData.data.includes(body.title)) {
+            return this.genResponse(404, "Not Found: Meeting does not exist");
+        }
+
+        const deleteSuccess = this.meetingDB.delete(body.username + body.title);
+        if (!deleteSuccess)
+            return this.genResponse(404, "Not Found: Meeting does not exist in database");
+
+        userData.data = userData.data.filter(title => title !== body.title);
+        const updateSuccess = this.userDB.update(body.username, userData);
+        if (!updateSuccess) {
+            return this.genResponse(500, "Internal Server Error: Failed to update user data");
+        }
+
+        return this.genResponse(200, "Ok");
     }
 }
